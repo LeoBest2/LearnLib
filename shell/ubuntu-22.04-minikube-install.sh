@@ -47,6 +47,10 @@ function install_minikube() {
     # --kubernetes-version=v1.23.8 https://github.com/kubernetes/minikube/issues/14477
     minikube start --kubernetes-version=v1.23.8 --image-mirror-country=cn
     echo "安装minikube完毕..."
+    echo "正在下载安装kubectl..."
+    curl -LO https://dl.k8s.io/release/v1.23.8/bin/linux/amd64/kubectl
+    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    echo "kubectl安装完毕"
 }
 
 install_docker
@@ -62,11 +66,22 @@ EOF
 docker version
 cat <<EOF
 **************************************
-    minikube kubectl -- get po -A
+        minikube version
 **************************************
 EOF
-minikube kubectl -- get po -A
-# 可选
-# echo 'alias kubectl="minikube kubectl --"' >> ~/.profile
-# source ~/.profile
-echo -e "\n更过信息可参考: https://minikube.sigs.k8s.io/docs/start/"
+minikube version
+cat <<EOF
+**************************************
+        kubectl version
+        kubectl get pods -A
+**************************************
+EOF
+kubectl version
+kubectl get pods -A
+cat <<EOF
+**************************************
+# 可添加自动补全 ~/.bashrc 或 ~/.zshrc
+    source < (kubectl completion bash) 
+    source < (kubectl completion zsh)
+**************************************
+EOF
