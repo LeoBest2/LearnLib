@@ -70,6 +70,9 @@ const onLogin = () => {
 const onAPI = () => {
   axios.get('/api/test', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } })
     .then(response => {
+      if (response.headers['new-token']) {
+        localStorage.setItem('token', response.headers['new-token']);
+      }
       if (response.data.code !== 0) {
         ElMessage.warning(`获取: ${response.data.msg}`)
       } else {

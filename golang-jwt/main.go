@@ -13,6 +13,11 @@ import (
 
 var jwtKey []byte = []byte("secret")
 
+const (
+	TOKEN_MAX_EXPIRE_HOUR      = 1  // token最长有效期
+	TOKEN_MAX_REMAINING_MINUTE = 15 // token还有多久过期就返回新token
+)
+
 type customClaims struct {
 	Username string `json:"username"`
 	IsAdmin  bool   `json:"IsAdmin"`
@@ -32,6 +37,19 @@ func AuthRequired() gin.HandlerFunc {
 			if !claims.VerifyExpiresAt(time.Now(), false) {
 				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"code": -1, "msg": "access token expired"})
 				return
+			}
+			// 即将超过过期时间，则添加一个http header `new-token` 给前端更新
+			if t := claims.ExpiresAt.Time.Add(-time.Minute * TOKEN_MAX_REMAINING_MINUTE); t.Before(time.Now()) {
+				claims := customClaims{
+					Username: claims.Username,
+					IsAdmin:  claims.Username == "admin",
+					RegisteredClaims: jwt.RegisteredClaims{
+						ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(TOKEN_MAX_EXPIRE_HOUR * time.Hour)},
+					},
+				}
+				token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+				tokenString, _ := token.SignedString(jwtKey)
+				ctx.Header("new-token", tokenString)
 			}
 			ctx.Set("claims", claims)
 		} else {
@@ -64,7 +82,7 @@ func main() {
 			Username: req.Username,
 			IsAdmin:  req.Username == "admin",
 			RegisteredClaims: jwt.RegisteredClaims{
-				ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(1 * time.Hour)},
+				ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(TOKEN_MAX_EXPIRE_HOUR * time.Hour)},
 			},
 		}
 
