@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cm-demo
+  labels:
+    name: cm-demo
+spec:
+  containers:
+  - name: cm-demo
+    image: leo/cm-demo
+    imagePullPolicy: Never
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    env:
+      - name: LEO-NAME
+        valueFrom:
+          configMapKeyRef:
+            name: cm-demo-config
+            key: LEO-NAME
+      - name: LEO-AGE
+        valueFrom:
+          configMapKeyRef:
+            name: cm-demo-config
+            key: LEO-AGE
