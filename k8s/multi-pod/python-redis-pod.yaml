@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: python-redis
+  labels:
+    name: python-redis
+spec:
+  containers:
+    - name: python-redis
+      image: leo/python-redis
+      imagePullPolicy: IfNotPresent
+      resources:
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      ports:
+        - containerPort: 5000
+    - name: redis
+      image: redis:alpine
+      imagePullPolicy: IfNotPresent
+      resources:
+        limits:
+          memory: "1024Mi"
+          cpu: "500m"
