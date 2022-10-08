@@ -3,10 +3,9 @@
 docker build -t leo/python-redis .
 docker image save leo/python-redis > python-redis.tar
 
-for machine in $(minikube node list | cut -f 1); do
-    minikube image load python-redis.tar
-done
+minikube image load python-redis.tar
 rm -v python-redis.tar
 
 kubectl apply -f ./python-redis-pod.yaml
+sleep 10
 kubectl get pods
